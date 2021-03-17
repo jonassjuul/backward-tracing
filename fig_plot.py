@@ -6,172 +6,99 @@ import numpy as np
 from def_plots import * 
 
 
+# Fig with only 2 states
+labels = {'y':['Count'],'x':['Infections prevented \nper isolation']}
+binnumber = 10
 
-labels = {'y':['Infectious','Count','Count'],'x':['Time','Infections prevented','Infections prevented \nper isolation']}
-
-plot_dimension = (3,3)
+plot_dimension = (1,2)
 labelsize = 6
 insetnumbersize = 10
 color_face = '#E0E0E0'
+im_flat = plt.imread('figures/q_flat.png')
+im_skewed = plt.imread('figures/q_skewed.png')
 
-fig_res(2,labels)
-plt.figure(2)
+fig_res(3,labels,length=10,factor=0.5)
+plt.figure(3)
 inset = (0,0)
 ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-ax.set_title('Indistinguishable')
-plot_line_alt(ax,'I_curves_NodesDistinguishable0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt','plot_file','k','No intervention')
-plot_line_alt(ax,'I_curves_NodesDistinguishable0_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt','plot_file','orange','Isolation')
-plot_line_alt(ax,'I_curves_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt','plot_file','m','Isolation, Trace')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt','plot_file','g','Isolation, Trace, \n(no parents)')
-ax.legend(loc=1,frameon=False,handler_map={PathCollection : HandlerPathCollection(update_func= update),
-                        plt.Line2D : HandlerLine2D(update_func = update)},fontsize=4.)
+#ax.set_title('Indistinguishable')
+hist_inf_prev_per_isolate(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0_Ntrace30.txt',
+                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0_Ntrace30.txt',
+                filename_nfound = 'Found/Found_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0_Ntrace30.txt',
+                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0_Ntrace30.txt',
+                color='m',label='Backward',nbins=binnumber,smallfig=False)
+hist_inf_prev_per_isolate(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1_Ntrace30.txt',
+                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0_Ntrace30.txt',
+                filename_nfound = 'Found/Found_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1_Ntrace30.txt',                
+                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1_Ntrace30.txt',
+                color='g',label='Forward',nbins=binnumber,smallfig=False)
+#ax.set_facecolor(color_face)
+
 add_label(ax,inset,labels,labelsize)
 add_insetlabel(ax,'A',insetnumbersize)
-give_ticksize(ax,labelsize)
+add_insetimage(ax,height="50%",loc=1,image=im_flat)
+# ax.legend(loc=4,frameon=False,handler_map={PathCollection : HandlerPathCollection(update_func= update),
+#                         plt.Line2D : HandlerLine2D(update_func = update)},fontsize=5.,markerfirst=True)
 
+give_ticksize(ax,labelsize)
 
 
 inset = (0,1)
 ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-ax.set_title('Distinguishable')
+#ax.set_title('Distinguishable')
+hist_inf_prev_per_isolate(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0_Ntrace30.txt',
+                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0_Ntrace30.txt',
+                filename_nfound = 'Found/Found_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0_Ntrace30.txt',                
+                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0_Ntrace30.txt',
+                color='m',label='Backward contact tracing',nbins=binnumber,smallfig=False)
+hist_inf_prev_per_isolate(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1_Ntrace30.txt',
+                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0_Ntrace30.txt',
+                filename_nfound = 'Found/Found_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1_Ntrace30.txt',
+                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Dayspresymp3_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1_Ntrace30.txt',
+                color='g',label='Forward contact tracing',nbins=binnumber,smallfig=False)
 
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt','plot_file','k','No intervention')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt','plot_file','orange','Isolation')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt','plot_file','m','Iso. and Trace')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt','plot_file','g','Iso., Trace, no parents')
-ax.set_facecolor(color_face)
 add_label(ax,inset,labels,labelsize)
 add_insetlabel(ax,'B',insetnumbersize)
-give_ticksize(ax,labelsize)
-
-inset = (0,2)
-
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-ax.set_title('Skewed infectiousness')
-
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0.txt','plot_file','k','No intervention')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.000_ShapeSkewed_Ignoreparents0.txt','plot_file','orange','Isolation')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0.txt','plot_file','m','Iso. and Trace')
-plot_line_alt(ax,'I_curves/I_curves_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1.txt','plot_file','g','Iso., Trace, no parents')
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'C',insetnumbersize)
-give_ticksize(ax,labelsize)
-
-# CUMSUM
-inset = (1,0)
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-
-#plot_line_alt(ax,'Exposednew_NodesDistinguishable0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt','cumplot_file','k','No intervention')
-#plot_line_alt(ax,'Exposednew_NodesDistinguishable0_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt','cumplot_file','orange','Isolation')
-#plot_line_alt(ax,'Exposednew_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt','cumplot_file','m','Iso. and Trace')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt','cumplot_file','g','Iso., Trace, no parents')
-binnumber = 10
-hist_inf_prev(ax,filename='Exposednew_NodesDistinguishable0_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt',filename_benchmark='Exposednew_NodesDistinguishable0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt',color='orange',label='Isolation',nbins=binnumber)
-hist_inf_prev(ax,filename='Exposednew_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt',filename_benchmark='Exposednew_NodesDistinguishable0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt',color='m',label='Iso. and Trace',nbins=binnumber)
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt',filename_benchmark='Exposednew_NodesDistinguishable0_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt',color='g',label='Iso., Trace, no parents',nbins=binnumber)
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'D',insetnumbersize)
+add_insetimage(ax,height="50%",loc=1,image=im_skewed)
 give_ticksize(ax,labelsize)
 
 
-
-inset = (1,1)
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt','cumplot_file','k','No intervention')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt','cumplot_file','orange','Isolation')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt','cumplot_file','m','Iso. and Trace')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt','cumplot_file','g','Iso., Trace, no parents')
-
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt',filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt',color='orange',label='Isolation',nbins=binnumber)
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt',filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt',color='m',label='Iso. and Trace',nbins=binnumber)
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt',filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_ps0.000_pt0.000_ShapeFlat_Ignoreparents0.txt',color='g',label='Iso., Trace, no parents',nbins=binnumber)
-ax.set_facecolor(color_face)
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'E',insetnumbersize)
-give_ticksize(ax,labelsize)
+ax.legend(loc=4,frameon=False,handler_map={PathCollection : HandlerPathCollection(update_func= update),
+                        plt.Line2D : HandlerLine2D(update_func = update)},fontsize=5.,markerfirst=True)
 
 
-inset = (1,2)
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0.txt','cumplot_file','k','No intervention')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.000_ShapeSkewed_Ignoreparents0.txt','cumplot_file','orange','Isolation')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0.txt','cumplot_file','m','Iso. and Trace')
-#plot_line_alt(ax,'Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1.txt','cumplot_file','g','Iso., Trace, no parents')
-
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.000_ShapeSkewed_Ignoreparents0.txt',filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0.txt',color='orange',label='Isolation',nbins=binnumber)
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0.txt',filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0.txt',color='m',label='Iso. and Trace',nbins=binnumber)
-hist_inf_prev(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1.txt',filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.000_pt0.000_ShapeSkewed_Ignoreparents0.txt',color='g',label='Iso., Trace, no parents',nbins=binnumber)
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'F',insetnumbersize)
-give_ticksize(ax,labelsize)
-
-
-
-
-inset = (2,0)
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-hist_inf_prev_per_trace(ax,filename='Exposednew/Exposednew_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0_Ntrace30.txt',
-                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.050_pt0.000_ShapeFlat_Ignoreparents0_Ntrace30.txt',
-                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0_Ntrace30.txt',
-                color='m',label='Iso. and Trace',nbins=binnumber)
-hist_inf_prev_per_trace(ax,filename='Exposednew/Exposednew_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt',
-                filename_benchmark='Exposednew_NodesDistinguishable0_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt',
-                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt',
-                color='g',label='Iso., Trace, no parents',nbins=binnumber)
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'G',insetnumbersize)
-give_ticksize(ax,labelsize)
-
-
-
-inset = (2,1)
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-hist_inf_prev_per_trace(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt',
-                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt',
-                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents0.txt',
-                color='m',label='Iso. and Trace',nbins=binnumber)
-hist_inf_prev_per_trace(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt',
-                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_ps0.050_pt0.000_ShapeFlat_Ignoreparents0.txt',
-                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents1.txt',
-                color='g',label='Iso., Trace, no parents',nbins=binnumber)
-ax.set_facecolor(color_face)
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'H',insetnumbersize)
-give_ticksize(ax,labelsize)
-
-
-
-
-
-inset = (2,2)
-ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
-hist_inf_prev_per_trace(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0.txt',
-                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.000_ShapeSkewed_Ignoreparents0.txt',
-                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents0.txt',
-                color='m',label='Iso. and Trace',nbins=binnumber)
-hist_inf_prev_per_trace(ax,filename='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1.txt',
-                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.000_ShapeSkewed_Ignoreparents0.txt',
-                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable1_Daysasymp4_ps0.050_pt0.500_ShapeSkewed_Ignoreparents1.txt',
-                color='g',label='Iso., Trace, no parents',nbins=binnumber)
-
-add_label(ax,inset,labels,labelsize)
-add_insetlabel(ax,'I',insetnumbersize)
-give_ticksize(ax,labelsize)
-
-'''for i in range (plot_dimension[0]) :
-    for j in range (plot_dimension[1]) :
-        #ax = plt.subplot2grid(plot_dimension,(i,j),rowspan=1,colspan=1)
-
-        if (i== 0) :
-            ax.set_ylabel(labels['y'][j],fontsize=SMALL_SIZE)
-        #if (j== plot_dimension[1]-1) :
-        ax.set_xlabel(labels['x'][i],fontsize=SMALL_SIZE)
-'''
-
-#ax.tick_params(axis='both', which='major', labelsize=labelsize)
-#ax.tick_params(axis='both', which='minor', labelsize=labelsize)
-give_ticksize(ax,labelsize)
 plt.tight_layout()
-plt.savefig('figures/resfig.png',dpi=400)
+plt.savefig('figures/resfig_isolate.png',dpi=400)
+
+
+# PER ISOLATE
+# Fig with only 2 states
+labels = {'y':['Count'],'x':['Infections prevented \nper isolation']}
+binnumber = 10
+
+plot_dimension = (1,1)
+labelsize = 6
+insetnumbersize = 10
+color_face = '#E0E0E0'
+im_flat = plt.imread('figures/q_flat.png')
+im_skewed = plt.imread('figures/q_skewed.png')
+
+fig_res(3,labels,length=3,factor=1)
+plt.figure(3)
+inset = (0,0)
+ax = plt.subplot2grid(plot_dimension,inset,rowspan=1,colspan=1)
+#ax.set_title('Indistinguishable')
+hist_inf_prev_per_isolate(ax,filename='Exposednew/Exposednew_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents22_Ntrace30.txt',
+                filename_benchmark='Exposednew/Exposednew_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.000_pt0.000_ShapeFlat_Ignoreparents22_Ntrace30.txt',
+                filename_nfound = 'Found/Found_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents22_Ntrace30.txt',
+                filename_ntraced = 'Isolated/Isolated_NodesDistinguishable0_Dayspresymp3_Daysasymp0_ps0.050_pt0.500_ShapeFlat_Ignoreparents22_Ntrace30.txt',
+                color='k',label='Indistinguishable',nbins=binnumber,smallfig=False)
+#ax.set_facecolor(color_face)
+
+
+ax.legend(loc=4,frameon=False,handler_map={PathCollection : HandlerPathCollection(update_func= update),
+                        plt.Line2D : HandlerLine2D(update_func = update)},fontsize=5.,markerfirst=True)
+
+
+plt.tight_layout()
+plt.savefig('figures/resfig_isolate_indistinguishable.png',dpi=400)

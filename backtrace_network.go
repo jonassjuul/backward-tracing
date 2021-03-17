@@ -84,8 +84,8 @@ func get_skewed_function(infectious_ends int,child_location string,child_locatio
 		mean := child_location_parameters[0]
 		var denominator float64
 		for day:= 0 ; day < infectious_ends ; day ++ {
-			child_location_array[day] += math.Pow(mean,float64(day))/factorial(float64(day))*math.Exp(-mean)
-			denominator += math.Pow(mean,float64(day))/factorial(float64(day))*math.Exp(-mean)
+			child_location_array[day] += math.Pow(math.Pow(mean,float64(day))/factorial(float64(day))*math.Exp(-mean),1)
+			denominator += math.Pow(math.Pow(mean,float64(day))/factorial(float64(day))*math.Exp(-mean),1)
 		}
 
 		for day:= 0 ; day < infectious_ends ; day ++ {
@@ -105,7 +105,7 @@ func make_infectiousness(infectiousness_shape string,days_infect int,p_infect fl
 			infectiousness[day] += p_infect
 
 		} else if (infectiousness_shape == "Skewed") {
-			infectiousness = get_skewed_function(days_infect,"poisson",[1]float64{3})
+			infectiousness = get_skewed_function(days_infect,"poisson",[1]float64{3})//{3})
 			for i := 0 ; i<len(infectiousness) ; i ++ {
 				infectiousness[i] *= float64(days_infect)*p_infect
 			}
@@ -151,7 +151,7 @@ func draw_random_float() float64 {
 	return r1.Float64()
 }
 
-func update_states(network_arr [][]int, contact_list map[int]int,States []int,Parents []int,days_presymp int, days_asymp int, days_tot int, num_infected int, nodes_distinguishable int,ps float64,pt float64, ignore_parents int) ([]int, int) {
+func update_states(network_arr [][]int, contact_list map[int]int,States []int,Parents []int,days_presymp int, days_asymp int, days_tot int, num_infected int, num_found int, nodes_distinguishable int,ps float64,pt float64, ignore_parents int) ([]int, int, int) {
 	// Nodes infected.. Should only be infectious!
 	
 	var remove_nodes []int
@@ -176,6 +176,7 @@ func update_states(network_arr [][]int, contact_list map[int]int,States []int,Pa
 						States[node] = -9 +0
 						contact_list = add_contacts(network_arr,node,contact_list, Parents,pt,ignore_parents)
 						num_infected -= 1
+						num_found +=1
 
 					}
 				}
@@ -199,7 +200,7 @@ func update_states(network_arr [][]int, contact_list map[int]int,States []int,Pa
 		for node := 0 ; node < len(old_nodes) ; node ++ {
 			found := 0
 			for (found == 0) {
-				remove_this_node := draw_random_integer(num_infected)
+				remove_this_node := draw_random_integer(len(infectious_nodes))
 				if (is_int_in_array(remove_nodes,remove_this_node) == 0) {
 					remove_nodes = append(remove_nodes,remove_this_node+0)
 					if (States[infectious_nodes[remove_this_node]] < days_tot){
@@ -233,10 +234,10 @@ func update_states(network_arr [][]int, contact_list map[int]int,States []int,Pa
 	}
 
 
-	return States, num_infected
+	return States, num_infected,num_found
 }
 
-func new_infections(network_arr [][]int, contact_list map[int]int,results_newexposed []string, States []int, Parents []int,days_presymp int, days_asymp int,infectiousness []float64, ps float64, pt float64,num_infected int,ignore_parents int) (map[int]int,[]string,[]int,[]int){
+func new_infections(network_arr [][]int, contact_list map[int]int,results_newexposed []string, States []int, Parents []int,days_presymp int, days_asymp int,infectiousness []float64, ps float64, pt float64,num_infected int,num_found int, ignore_parents int) (map[int]int,[]string,[]int,[]int,int){
 
 	var newexposed int
 	for node := 0 ; node < len(States) ; node ++ {
@@ -256,7 +257,7 @@ func new_infections(network_arr [][]int, contact_list map[int]int,results_newexp
 						if (rand_float_isolate < ps && days_asymp == 0) {
 							States[network_arr[node][nb]] = -9 +0
 							contact_list = add_contacts(network_arr,network_arr[node][nb],contact_list, Parents,pt,ignore_parents)
-
+							num_found += 1
 						} else {
 
 						// Infect..
@@ -273,7 +274,7 @@ func new_infections(network_arr [][]int, contact_list map[int]int,results_newexp
 		}
 	}
 	results_newexposed = append(results_newexposed,strconv.Itoa(newexposed))
-	return contact_list,results_newexposed,States,Parents//,num_infected
+	return contact_list,results_newexposed,States,Parents,num_found//,num_infected
 
 }
 
@@ -291,9 +292,10 @@ func trace_and_isolate(network_arr [][]int, contact_list map[int]int, States []i
 	sort.Ints(v)
 	if (len(v)>0) {
 		var breaking_point int = v[len(v)-int(math.Min(float64(n),float64(len(v))))]
-	
+		var on_breaking_point []int
 		for  key := range contact_list {
-			if (contact_list[key]>=breaking_point) {
+			//fmt.Println(contact_list[key],breaking_point)
+			if (contact_list[key]>breaking_point) {
 
 				if (States[key]>=days_presymp) {
 					num_infected -=1
@@ -303,16 +305,28 @@ func trace_and_isolate(network_arr [][]int, contact_list map[int]int, States []i
 				// Isolate
 				States[key] = -9
 				num_isolated += 1
+				//fmt.Println("Yes")
+			}
+			if (contact_list[key]==breaking_point) {
+				on_breaking_point = append(on_breaking_point,key)
+
 			}
 		}
+		num_isolated_start := num_isolated +0
+		for  entry := 0 ; entry < int(math.Min(float64(n-num_isolated_start),float64(len(on_breaking_point)))) ; entry ++ {
+			States[on_breaking_point[entry]] = -9
+			num_isolated += 1
+		}
+
 	}
+	//fmt.Println("num isol",num_isolated)
 	return States, num_infected,num_isolated
 }
 
 func add_contacts(network_arr [][]int, node int, contact_list map[int]int,Parents []int,pt float64,ignore_parents int) (map[int]int){
 	for nb := 0 ; nb < len(network_arr[node]) ; nb ++ {
 		random_float := draw_random_float()
-		if (random_float < pt && ( ignore_parents == 0 || Parents[node] != network_arr[node][nb])) {
+		if (random_float < pt && ( ( ignore_parents == 0 && Parents[node] == network_arr[node][nb]) || ( ignore_parents == 1 && Parents[node] != network_arr[node][nb]) || ignore_parents == 22)) {
 
 			contact_list[network_arr[node][nb]] += 1
 
@@ -381,12 +395,12 @@ func main() {
 	const days_tot int = days_presymp + days_infect
 	var p_infect float64 = 1.5/((mean_degree-1)*float64(days_infect)) // Expected 1.5 cases per case.
 
-	var infectiousness_shape string = [3]string{"Skewed","Flat","Singular"}[0]
+	var infectiousness_shape string = [3]string{"Skewed","Flat","Singular"}[1]
 	var infectiousness []float64 = make_infectiousness(infectiousness_shape,days_infect,p_infect)
 	fmt.Println(infectiousness)
 
 	const N_seeds int = 250 // 1/1000 is a seed...
-	var nodes_distinguishable int = 1
+	var nodes_distinguishable int = 0
 
 	// Make disease mitigation definitions....
 
@@ -395,7 +409,7 @@ func main() {
 
 	var n_trace int = 30
 
-	const ignore_parents int = 1
+	const ignore_parents int = 22
 
 
 	// Make run definitions
@@ -417,7 +431,6 @@ func main() {
 		
 
 		// Make simulation definitions
-		var num_isolated int = 0
 		var num_infected int = 0//N_seeds +0
 		time := -1
 
@@ -425,29 +438,47 @@ func main() {
 		var results_infected []string
 		var results_newexposed []string
 		var results_isolated []string
+		var results_found []string
 
 		var filename_results = "outputs/I_curves/I_curves"+"_NodesDistinguishable"+strconv.Itoa(nodes_distinguishable)+"_Dayspresymp"+strconv.Itoa(days_presymp)+"_Daysasymp"+strconv.Itoa(days_asymp)+"_ps"+fmt.Sprintf("%4.3f", ps)+"_pt"+fmt.Sprintf("%4.3f", pt)+"_Shape"+infectiousness_shape+"_Ignoreparents"+strconv.Itoa(ignore_parents)+"_Ntrace"+strconv.Itoa(n_trace)+".txt"
 		var filename_resultsnewexposed = "outputs/Exposednew/Exposednew"+"_NodesDistinguishable"+strconv.Itoa(nodes_distinguishable)+"_Dayspresymp"+strconv.Itoa(days_presymp)+"_Daysasymp"+strconv.Itoa(days_asymp)+"_ps"+fmt.Sprintf("%4.3f", ps)+"_pt"+fmt.Sprintf("%4.3f", pt)+"_Shape"+infectiousness_shape+"_Ignoreparents"+strconv.Itoa(ignore_parents)+"_Ntrace"+strconv.Itoa(n_trace)+".txt"
 		var filename_resultsisolated = "outputs/Isolated/Isolated"+"_NodesDistinguishable"+strconv.Itoa(nodes_distinguishable)+"_Dayspresymp"+strconv.Itoa(days_presymp)+"_Daysasymp"+strconv.Itoa(days_asymp)+"_ps"+fmt.Sprintf("%4.3f", ps)+"_pt"+fmt.Sprintf("%4.3f", pt)+"_Shape"+infectiousness_shape+"_Ignoreparents"+strconv.Itoa(ignore_parents)+"_Ntrace"+strconv.Itoa(n_trace)+".txt"
-
+		var filename_resultsfound = "outputs/Found/Found"+"_NodesDistinguishable"+strconv.Itoa(nodes_distinguishable)+"_Dayspresymp"+strconv.Itoa(days_presymp)+"_Daysasymp"+strconv.Itoa(days_asymp)+"_ps"+fmt.Sprintf("%4.3f", ps)+"_pt"+fmt.Sprintf("%4.3f", pt)+"_Shape"+infectiousness_shape+"_Ignoreparents"+strconv.Itoa(ignore_parents)+"_Ntrace"+strconv.Itoa(n_trace)+".txt"
+		
+		var num_isolated int = 0
+		var num_found int = 0
+		
+		
+		results_infected = append(results_infected,strconv.Itoa(num_infected))
+		results_isolated = append(results_isolated,strconv.Itoa(num_isolated))
+		results_found = append(results_found,strconv.Itoa(num_found))
 		for (num_infected > 0 || time < days_presymp) {
 
 			var contact_list = make(map[int]int) // map of int
 
 			time+=1
-			fmt.Println("Exp",exp,"Doing time", time, "Number infected:",num_infected)
-			results_infected = append(results_infected,strconv.Itoa(num_infected))
-			results_isolated = append(results_isolated,strconv.Itoa(num_isolated))
+			fmt.Println("Exp",exp,"Doing time", time, "Number infected:",num_infected,"Number isolated:",num_isolated,"Number found",num_found)
+
+
+			num_isolated = 0
+			num_found = 0
+			//var num_isolated int = 0
+			//var num_found int = 0
+
 
 			// First thing: Update all States
-			States,num_infected = update_states(network_arr,contact_list,States,Parents,days_presymp,days_asymp,days_tot,num_infected,nodes_distinguishable,ps,pt,ignore_parents)
+			States,num_infected,num_found = update_states(network_arr,contact_list,States,Parents,days_presymp,days_asymp,days_tot,num_infected,num_found,nodes_distinguishable,ps,pt,ignore_parents)
 
 			// Then: Infect neighbours
-			contact_list,results_newexposed, States,Parents = new_infections(network_arr,contact_list,results_newexposed, States, Parents,days_presymp,days_asymp,infectiousness,ps,pt,num_infected,ignore_parents)
+			contact_list,results_newexposed, States,Parents,num_found = new_infections(network_arr,contact_list,results_newexposed, States, Parents,days_presymp,days_asymp,infectiousness,ps,pt,num_infected,num_found,ignore_parents)
 
 			// Lastly : Trace and isolate.
 			States,num_infected,num_isolated = trace_and_isolate(network_arr,contact_list,States,days_presymp,n_trace,num_infected,num_isolated)
-
+			
+			
+			results_infected = append(results_infected,strconv.Itoa(num_infected))
+			results_isolated = append(results_isolated,strconv.Itoa(num_isolated))
+			results_found = append(results_found,strconv.Itoa(num_found))
 			if (time > 140) {
 				break
 
@@ -456,6 +487,7 @@ func main() {
 		append_to_file(filename_results,results_infected)
 		append_to_file(filename_resultsnewexposed,results_newexposed)
 		append_to_file(filename_resultsisolated,results_isolated)
+		append_to_file(filename_resultsfound,results_found)
 
 	}
 

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt 
 import numpy as np 
-
+from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
+from mpl_toolkits.axes_grid.inset_locator import inset_axes
 def test_imp() :
     print("Hello world")
 # convert cm to inches
@@ -104,10 +105,10 @@ def get_array_finalval(filename) :
 
     return np.array(finalvals)
 
-def fig_res(fignum,labels) :
+def fig_res(fignum,labels,length=12,factor=1) :
 
-    length = 12
-    figsize = (cm_to_inch(length),cm_to_inch(length))
+    #length = 12
+    figsize = (cm_to_inch(length),cm_to_inch(length)*factor)
 
     fig = plt.figure(fignum,figsize=figsize)
 
@@ -189,7 +190,7 @@ def hist_inf_prev(ax,filename,filename_benchmark,color,label,nbins) :
 
     return ax
 
-def hist_inf_prev_per_trace(ax,filename,filename_benchmark,filename_ntraced,color,label,nbins) :
+def hist_inf_prev_per_trace(ax,filename,filename_benchmark,filename_ntraced,color,label,nbins,smallfig=False) :
 
     exposed = get_array_finalval(filename)
     exposed_benchmark = get_array_finalval(filename_benchmark)
@@ -201,9 +202,38 @@ def hist_inf_prev_per_trace(ax,filename,filename_benchmark,filename_ntraced,colo
     print(len(exposed_benchmark))
     ax.hist(plotarr_prevpertrace,bins=nbins,facecolor=color,label=label,density=False,alpha=0.5)    
     ax.set_ylim([0,30])
-    ax.set_xlim([0,0.035])
-    ax.set_xticks([0,0.015,0.030])
+    if (smallfig==False) :
+        ax.set_xlim([0,0.035])
+        ax.set_xticks([0,0.015,0.030])
+
+    else : 
+        ax.set_xlim([0,5])
+        ax.set_xticks([0,2.5,5.0])   
     return ax
+
+def hist_inf_prev_per_isolate(ax,filename,filename_benchmark,filename_nfound,filename_ntraced,color,label,nbins,smallfig=False) :
+
+    exposed = get_array_finalval(filename)
+    exposed_benchmark = get_array_finalval(filename_benchmark)
+
+    nfound = get_array_finalval(filename_nfound)
+    ntrace = get_array_finalval(filename_ntraced)
+    print(len(nfound),len(ntrace))
+
+    plotarr_prevpertrace = get_plotarr_prevpertrace(exposed,exposed_benchmark,(ntrace+nfound))
+
+    print(len(exposed_benchmark))
+    ax.hist(plotarr_prevpertrace,bins=nbins,facecolor=color,label=label,density=False,alpha=0.5)    
+    ax.set_ylim([0,30])
+    if (smallfig==False) :
+        ax.set_xlim([0,6])
+        ax.set_xticks([0,2,4,6]) 
+
+    else : 
+       ax.set_xlim([0,6])
+       ax.set_xticks([0,2,4,6])    
+    return ax
+
 
 def get_plotarr_prevpertrace(exposed,exposed_benchmark,ntrace) :
     res = []
@@ -236,4 +266,23 @@ def add_insetlabel(ax,insetlabel,numberingfontsize) :
 def give_ticksize(ax,labelsize) :
     ax.tick_params(axis='both', which='major', labelsize=labelsize)
     ax.tick_params(axis='both', which='minor', labelsize=labelsize)
+    return ax
+
+def add_insetimage(ax,height,loc,image) :
+    im_ax01 = inset_axes(ax,
+                        height=height, # set height
+                        width=height, # and width
+                        loc=loc,
+                        #facecolor='b'
+                        ) # center, you can check the different codes in plt.legend?
+    im_ax01.imshow(image)
+    #im_ax01.patch.set_facecolor('red')    
+
+    im_ax01.axis('off')    
+    
+    #im_ax01.set_alpha(0.1)
+    #im_ax01.set_facecolor('blue')
+
+
+
     return ax
