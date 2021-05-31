@@ -217,8 +217,12 @@ def hist_inf_prev_per_isolate(ax,filename,filename_benchmark,filename_nfound,fil
     exposed_benchmark = get_array_finalval(filename_benchmark)
 
     nfound = get_array_finalval(filename_nfound)
-    ntrace = get_array_finalval(filename_ntraced)
-    print(len(nfound),len(ntrace))
+    if (filename_ntraced != '') :
+        ntrace = get_array_finalval(filename_ntraced)
+    else : 
+        ntrace = 0
+    print(ntrace)
+    #print(len(nfound),len(ntrace))
 
     plotarr_prevpertrace = get_plotarr_prevpertrace(exposed,exposed_benchmark,(ntrace+nfound))
 
