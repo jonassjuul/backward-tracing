@@ -7,8 +7,8 @@ using DataFrames
 # Include my functions.....
 include("Functions_Lognormal.jl")
 
-DataPath=string("../../../../../../data/jlj/outputs/BackwardTracing/");
-
+#DataPath=string("../../../../../../data/jlj/outputs/BackwardTracing/");
+DataPath=string("data/backward-tracing/")
 
 # Definitions
 # -----------
@@ -28,14 +28,14 @@ Average_R0 = 1.; #3//2.5 # Mean number of children in full period of infection.
 OffspringDistribution = "poisson";
 #OffspringDistribution = "geometric";
 
-InfectiousProfile = "empirical";
+#InfectiousProfile = "empirical";
 #InfectiousProfile = "FlatSkewed";
-#InfectiousProfile = "Flat";
+InfectiousProfile = "Flat";
 
-SymptomOnsetTime = "halfway";
-#SymptomOnsetTime = "immediately";
+#SymptomOnsetTime = "halfway";
+SymptomOnsetTime = "immediately";
 
-IncludeExposedCompartment = false; # true if SEIR model. false if not.
+IncludeExposedCompartment = true; # true if SEIR model. false if not.
 InfectiousWaitingTimeExponential=false; #If false, time spent in Infectious state is lognormally distributed.
 ExposedExponentialMean = 4; # Exponential PDF is l*exp(-l*t), where 1/l is the parameter being defined here.
 InfectiousExponentialMean = ExposedExponentialMean+0; # Exponential PDF is l*exp(-l*t), where 1/l is the parameter being defined here.
@@ -56,19 +56,22 @@ WaitBeforeTracedAreReleased=10000; # How long does it take before a traced perso
 ProbabilityDetectionWhenSymptoms=0.05;#0.05; #ps of Kojaku et al.
 ProbabilityNeighborsAreTraced=0.5;#0.5; #pt of Kojaku et al.
 
-ParentFactor=1.0; #Weight of parents in tracelist. If >ChildrenFactor, Parents are more important to trace.
+ParentFactor=0.0; #Weight of parents in tracelist. If >ChildrenFactor, Parents are more important to trace.
 
 
 ChildFactor=1-ParentFactor; #Weight of children in tracelist. If >ParentFactor, Children are more important to trace.
 
 # Get network
-NetworkTypeName="BA_Kojaku";
-NetworkFileName="BA_network.csv";
+# NetworkTypeName="ERtoPowerlaw0001rewired";#"BA_Kojaku";
+# NetworkFileName="ERtoPowerlaw_0.001rewired.csv";#"BA_network.csv";
+
+NetworkTypeName="PersonGathering";#"ERtoPowerlaw1000rewired";#"BA_Kojaku";PersonGathering";
+NetworkFileName="person_gathering_network.csv";#"ERtoPowerlaw_1.000rewired.csv";#"BA_network.csv";#"person_gathering_network.csv";#
 
 #NetworkTypeName="ER";
 #NetworkFileName="ER_network.csv";
 
-NetworkFileLocation=string("inputs/",NetworkFileName);
+NetworkFileLocation=string("github/backward-tracing/inputs/",NetworkFileName);
 Network = getNetwork(NetworkFileLocation);
 
 NumberOfNodes=maximum(keys(Network));
@@ -174,7 +177,7 @@ for ExperimentNumber =1:NumberOfExperiments
 
         SumInfected=0
         for NodeId =1:length(StateOfNodes)
-            if (StateOfNodes[NodeId]==1 || StateOfNodes[NodeId]==2)
+            if ((StateOfNodes[NodeId]==1 || StateOfNodes[NodeId]==2) && ((NetworkTypeName != "PersonGathering") || NodeId < 200000)  ) # Count only infected people..
                 SumInfected+=1;
             end
         end
@@ -201,13 +204,25 @@ for ExperimentNumber =1:NumberOfExperiments
 
     NumberOfRecovered=0;
     for NodeId =1:length(StateOfNodes)
-        if (StateOfNodes[NodeId]==3)
+        if (StateOfNodes[NodeId]==3 && ((NetworkTypeName != "PersonGathering") || NodeId < 200000))
             NumberOfRecovered+=1;
         end
     end
 
     # Now save results
     FilenameEnd=string("Network:",NetworkTypeName,"_InfectiousProfile:",InfectiousProfile,"_IncudeExposedCompartment",IncludeExposedCompartment,"_InfectiousWaitExponential:",InfectiousWaitingTimeExponential,"_AverageR0:",Average_R0,"_SymptomOnsetTime:",SymptomOnsetTime,"_TraceReleaseTime:",WaitBeforeTracedAreReleased,"_SeedNumber:",NumberOfSeeds,"_Ps:",ProbabilityDetectionWhenSymptoms,"_Pt:",ProbabilityNeighborsAreTraced,"_ParentFactor:",ParentFactor,"_ChildFactor:",ChildFactor,".txt");
+    
+    # If filename is too long, make it shorter..
+    if (length(FilenameEnd) > 255-20) # 255 characters is maximum filename length..
+        #FilenameEnd = FilenameEnd.replace("IncudeExposedCompartment","IEC")
+        global FilenameEnd=replace(FilenameEnd,"IncudeExposedCompartment"=>"IEC")        
+    end
+
+    if (length(FilenameEnd) > 255-20) # 255 characters isstill maximum filename length..
+        #FilenameEnd = FilenameEnd.replace("InfectiousWaitExponential","IWE")
+        global FilenameEnd=replace(FilenameEnd,"InfectiousWaitExponential"=>"IWE")        
+
+    end
     AppendLineToFile(string(DataPath,"Infected/",FilenameEnd),string(NumberOfRecovered)); # Number of Infected
     AppendLineToFile(string(DataPath,"TraceIsolated/",FilenameEnd),string(NumberOfTraceIsolations)); # Number of Infected
     AppendLineToFile(string(DataPath,"TestIsolated/",FilenameEnd),string(NumberOfTestIsolations)); # Number of Infected
@@ -215,6 +230,7 @@ for ExperimentNumber =1:NumberOfExperiments
     # Epidemic trees
     if (ProbabilityDetectionWhenSymptoms==0 && ProbabilityNeighborsAreTraced==0)
         #for Node in keys(ParentDictionary)
+        #println("string length:\t",length(string(FilenameEnd[1:end-4],"_Experiment:",ExperimentNumber,".txt")))
         AppendLineToFile(string(DataPath,"EpidemicTree/",FilenameEnd[1:end-4],"_Experiment:",ExperimentNumber,".txt"),TreeString); # Number of Infected
         #end
     end
